@@ -4,87 +4,92 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        #heygen-streaming-embed {
+            z-index: 9999;
+            position: fixed;
+            left: 10px;
+            bottom: 10px;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0px 8px 24px 0px rgba(0, 0, 0, 0.12);
+            transition: all linear 0.1s;
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+        }
+        #heygen-streaming-embed.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        #heygen-streaming-embed.expand {
+            height: calc(100vh - 20px);
+            width: calc(100vw - 20px);
+            border: 0;
+            border-radius: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        #heygen-streaming-container {
+            width: 100%;
+            height: 100%;
+        }
+        #heygen-streaming-container iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+    </style>
 </head>
 <body>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const host = "https://app.heygen.com",
+                url = host + "/guest/streaming-embed?share=eyJxdWFsaXR5IjoiaGlnaCIsImF2YXRhck5hbWUiOiJqb3NoX2xpdGUzXzIwMjMwNzE0Iiwidm9p%0D%0AY2UiOnsidm9pY2VfaWQiOiJkMGRiOTM4YzYxYzU0YTJiYmExOTdlMzZkZjQwMzc0ZiJ9LCJwcmV2%0D%0AaWV3SW1nIjoiaHR0cHM6Ly9maWxlcy5oZXlnZW4uYWkvYXZhdGFyL3YzLzEwMDYzYzc0M2YxMTQ3%0D%0AMjJhYjY1MzhiMzU5MDVjNTFjXzMwMTMvcHJldmlld190YXJnZXQud2VicCIsIm5lZWRSZW1vdmVC%0D%0AYWNrZ3JvdW5kIjpmYWxzZSwidXNlcm5hbWUiOiI1Y2Y2YTYxNzNkNTg0ZGY4YjZiNTY5ZTkwZGUz%0D%0AYmU3ZCJ9&inIFrame=1",
+                wrapDiv = document.createElement("div");
+            
+            wrapDiv.id = "heygen-streaming-embed";
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const host = "https://app.heygen.com",
-            url = host + "/guest/streaming-embed?share=eyJxdWFsaXR5IjoiaGlnaCIsImF2YXRhck5hbWUiOiJqb3NoX2xpdGUzXzIwMjMwNzE0Iiwidm9p%0D%0AY2UiOnsidm9pY2VfaWQiOiJkMGRiOTM4YzYxYzU0YTJiYmExOTdlMzZkZjQwMzc0ZiJ9LCJwcmV2%0D%0AaWV3SW1nIjoiaHR0cHM6Ly9maWxlcy5oZXlnZW4uYWkvYXZhdGFyL3YzLzEwMDYzYzc0M2YxMTQ3%0D%0AMjJhYjY1MzhiMzU5MDVjNTFjXzMwMTMvcHJldmlld190YXJnZXQud2VicCIsIm5lZWRSZW1vdmVC%0D%0AYWNrZ3JvdW5kIjpmYWxzZSwidXNlcm5hbWUiOiI1Y2Y2YTYxNzNkNTg0ZGY4YjZiNTY5ZTkwZGUz%0D%0AYmU3ZCJ9&inIFrame=1",
-            wrapDiv = document.createElement("div");
-        
-        wrapDiv.id = "heygen-streaming-embed";
+            const container = document.createElement("div");
+            container.id = "heygen-streaming-container";
 
-        const container = document.createElement("div");
-        container.id = "heygen-streaming-container";
+            const iframe = document.createElement("iframe");
+            iframe.allowFullscreen = !1;
+            iframe.title = "Streaming Embed";
+            iframe.role = "dialog";
+            iframe.src = url;
 
-        const stylesheet = document.createElement("style");
-        stylesheet.innerHTML = `
-            #heygen-streaming-embed {
-                z-index: 9999;
-                position: fixed;
-                left: 40px;
-                bottom: 40px;
-                width: 200px;
-                height: 200px;
-                border-radius: 50%;
-                border: 2px solid #fff;
-                box-shadow: 0px 8px 24px 0px rgba(0, 0, 0, 0.12);
-                transition: all linear 0.1s;
-                overflow: hidden;
-                opacity: 0;
-                visibility: hidden;
-            }
-            #heygen-streaming-embed.show {
-                opacity: 1;
-                visibility: visible;
-            }
-            #heygen-streaming-embed.expand {
-                ${document.body.clientWidth < 540 ? "height: 266px; width: 96%; left: 50%; transform: translateX(-50%);" : "height: 366px; width: calc(366px * 16 / 9);"}
-                border: 0;
-                border-radius: 8px;
-            }
-            #heygen-streaming-container {
-                width: 100%;
-                height: 100%;
-            }
-            #heygen-streaming-container iframe {
-                width: 100%;
-                height: 100%;
-                border: 0;
-            }
-        `;
+            let visible = false,
+                initial = false;
 
-        const iframe = document.createElement("iframe");
-        iframe.allowFullscreen = !1;
-        iframe.title = "Streaming Embed";
-        iframe.role = "dialog";
-        iframe.src = url;
-
-        let visible = false,
-            initial = false;
-
-        window.addEventListener("message", (e) => {
-            if (e.origin === host && e.data && e.data.type && "streaming-embed" === e.data.type) {
-                if ("init" === e.data.action) {
-                    initial = true;
-                    wrapDiv.classList.toggle("show", initial);
-                } else if ("show" === e.data.action) {
-                    visible = true;
-                    wrapDiv.classList.toggle("expand", visible);
-                } else if ("hide" === e.data.action) {
-                    visible = false;
-                    wrapDiv.classList.toggle("expand", visible);
+            window.addEventListener("message", (e) => {
+                if (e.origin === host && e.data && e.data.type && "streaming-embed" === e.data.type) {
+                    if ("init" === e.data.action) {
+                        initial = true;
+                        wrapDiv.classList.toggle("show", initial);
+                    } else if ("show" === e.data.action) {
+                        visible = true;
+                        wrapDiv.classList.toggle("expand", visible);
+                    } else if ("hide" === e.data.action) {
+                        visible = false;
+                        wrapDiv.classList.toggle("expand", visible);
+                    }
                 }
-            }
+            });
+
+            container.appendChild(iframe);
+            wrapDiv.appendChild(container);
+            document.body.appendChild(wrapDiv);
+
+            // Show the streaming embed initially
+            wrapDiv.classList.add("show");
         });
-
-        container.appendChild(iframe);
-        wrapDiv.appendChild(stylesheet);
-        wrapDiv.appendChild(container);
-        document.body.appendChild(wrapDiv);
-    });
-</script>
-
+    </script>
 </body>
 </html>
